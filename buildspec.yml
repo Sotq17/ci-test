@@ -19,9 +19,10 @@ phases:
       - cd src
       - tsc
       - npm run testNoWatch
-      - zip -r -q ${ZIP_FILE} *
+      - npm run build
+      # - zip -r -q ${ZIP_FILE} *
       # - aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://$ZIP_FILE --publish
       # - aws lambda update-function-configuration --function-name $FUNCTION_NAME --environment Variables={$ENV$STAGE} --memory-size $MEMORY --runtime $RUN_TIME --description "$DESCRIPTION" --timeout $TIMEOUT --handler $HANDLER
   post_build:
     commands:
-      - echo Deploy completed
+      - echo test and build done
