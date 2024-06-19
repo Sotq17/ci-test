@@ -1,0 +1,27 @@
+version: 0.2
+env:
+  variables:
+    DESCRIPTION: sample function
+    RUN_TIME: nodejs10.x
+    MEMORY: 128
+    TIMEOUT: 5
+    HANDLER: index.handler
+    ENV: TZ=Asia/Tokyo,NODE_ENV= # NODE_ENV=$STAGE
+    ZIP_FILE: /tmp/upload.zip
+phases:
+  pre_build:
+    commands:
+      - yarn global add typescript
+      - yarn install
+      -
+  build:
+    commands:
+      - cd src
+      - tsc
+      - npm run testNoWatch
+      - zip -r -q ${ZIP_FILE} *
+      # - aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://$ZIP_FILE --publish
+      # - aws lambda update-function-configuration --function-name $FUNCTION_NAME --environment Variables={$ENV$STAGE} --memory-size $MEMORY --runtime $RUN_TIME --description "$DESCRIPTION" --timeout $TIMEOUT --handler $HANDLER
+  post_build:
+    commands:
+      - echo Deploy completed
