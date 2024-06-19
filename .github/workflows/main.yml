@@ -1,0 +1,61 @@
+name: Run tests on PR
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Compile TypeScript
+      id: compile_ts
+      run: |
+        npx tsc --noEmit > ts-results.txt
+        if [ $? -ne 0 ]; then
+          echo "TypeScript compilation failed"
+        else
+          echo "TypeScript compilation succeeded"
+        fi
+
+    - name: Run tests
+      id: run_tests
+      run: |
+        npm run testNoWatch > test-results.txt
+        if [ $? -ne 0 ]; then
+          echo "Tests failed"
+        else
+          echo "All tests passed"
+        fi
+
+    - name: Comment on PR
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const testResult = fs.readFileSync('test-results.txt', 'utf8');
+          const comment = `
+            ## Test Results
+            \`\`\`
+            ${testResult}
+            \`\`\`
+          `;
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
